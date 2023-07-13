@@ -1,0 +1,43 @@
+name: Laravel
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  laravel-tests:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+    - name: Copy .env
+      run: copy .env.example .env
+    - name: Install Dependencies
+      run: composer install --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Generate key
+      run: php artisan key:generate
+    - name: Directory Permissions
+      run: icacls "storage" /grant:r "IIS_IUSRS:(OI)(CI)F" /T
+    - name: Create Database
+      run: |
+        php artisan config:cache
+        php artisan migrate --force
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+    
+
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: db4free.net
+        DB_PORT: 3306
+        DB_DATABASE: mzalendo
+        DB_USERNAME: mzalendo
+        DB_PASSWORD: "Messigoat@2021"
+
+      run: vendor/bin/phpunit
