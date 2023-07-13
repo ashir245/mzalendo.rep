@@ -20,9 +20,17 @@ jobs:
         extensions: mbstring, pdo_mysql
     - name: Copy .env
       run: copy .env.example .env
+    - name: Set Database Config
+      run: |
+        echo "DB_CONNECTION=mysql" >> .env
+        echo "DB_HOST=db4free.net" >> .env
+        echo "DB_PORT=3306" >> .env
+        echo "DB_DATABASE=mzalendo" >> .env
+        echo "DB_USERNAME=mzalendo" >> .env
+        echo "DB_PASSWORD=Messigoat@2021" >> .env
     - name: Install Dependencies
       run: composer install --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
-    - name: Generate key
+    - name: Generate Application Key
       run: php artisan key:generate
     - name: Directory Permissions
       run: icacls "storage" /grant:r "IIS_IUSRS:(OI)(CI)F" /T
@@ -30,13 +38,7 @@ jobs:
       run: |
         php artisan config:cache
         php artisan migrate --force
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
+    - name: Test Database Connection
+      run: php artisan test-database-connection
+    - name: Execute PHPUnit Tests
       run: vendor\bin\phpunit
-
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: db4free.net
-        DB_PORT: 3306
-        DB_DATABASE: mzalendo
-        DB_USERNAME: mzalendo
-        DB_PASSWORD: "Messigoat@2021"
